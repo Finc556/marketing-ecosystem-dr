@@ -18,7 +18,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'modules'))
 
 # Importar módulos
 try:
-    from modules.garimpo_module import iniciar_garimpo
+    from modules.garimpo_module_v2 import iniciar_garimpo
     from modules.copy_module import gerar_copy_modelada
     from modules.entregaveis_module import gerar_entregavel
 except ImportError as e:
@@ -68,7 +68,37 @@ st.markdown("""
 st.sidebar.title("🎯 Navegação")
 st.sidebar.markdown("---")
 
+# Configuração de API Keys
+st.sidebar.markdown("### 🤖 Configuração de IA")
+
+# Verificação de API Keys
+openai_key_status = "✅ Configurada" if os.getenv("OPENAI_API_KEY") else "❌ Não configurada"
+gemini_key_status = "✅ Configurada" if os.getenv("GOOGLE_API_KEY") else "❌ Não configurada"
+
+with st.sidebar.expander("🔑 Configurar API Keys"):
+    st.markdown("**OpenAI:**")
+    openai_key = st.text_input("API Key OpenAI:", type="password", placeholder="sk-...")
+    if openai_key:
+        os.environ["OPENAI_API_KEY"] = openai_key
+        st.success("✅ OpenAI configurada!")
+    
+    st.markdown("**Google Gemini:**")
+    gemini_key = st.text_input("API Key Gemini:", type="password", placeholder="AIza...")
+    if gemini_key:
+        os.environ["GOOGLE_API_KEY"] = gemini_key
+        st.success("✅ Gemini configurada!")
+    
+    st.markdown("---")
+    st.markdown("**📍 Como obter:**")
+    st.markdown("• [OpenAI API](https://platform.openai.com/api-keys)")
+    st.markdown("• [Google AI Studio](https://makersuite.google.com/app/apikey)")
+
+# Status das APIs
+st.sidebar.markdown(f"**OpenAI:** {openai_key_status}")
+st.sidebar.markdown(f"**Gemini:** {gemini_key_status}")
+
 # Informações do sistema
+st.sidebar.markdown("---")
 st.sidebar.markdown("### 📊 Status do Sistema")
 st.sidebar.success("✅ Sistema Online")
 st.sidebar.info(f"🕒 {datetime.now().strftime('%d/%m/%Y %H:%M')}")
@@ -88,10 +118,6 @@ provider_ia = st.sidebar.selectbox(
     ("openai", "gemini"),
     help="Escolha o provedor de IA para os módulos de copy e entregáveis"
 )
-
-# Verificação de API Key
-api_key_status = "✅ Configurada" if os.getenv("OPENAI_API_KEY") else "❌ Não configurada"
-st.sidebar.markdown(f"**API Key:** {api_key_status}")
 
 # --- PÁGINA INICIAL ---
 if modulo_selecionado == "🏠 Início":
