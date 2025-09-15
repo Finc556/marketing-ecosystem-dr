@@ -228,76 +228,216 @@ class GarimpadorOfertas:
     def garimpar_cbengine(self):
         """
         Garimpa ofertas do CBEngine (dados públicos do ClickBank).
+        Extrai dados detalhados da tabela de Top Gravity.
         """
-        logger.info("Iniciando garimpo do CBEngine...")
+        logger.info("🚀 Iniciando garimpo do CBEngine...")
         
         try:
             # Acessar página de Top Gravity
             self.driver.get("https://cbengine.com/clickbank-top-gravity.html")
+            logger.info("📄 Página CBEngine carregada")
             
-            # Aguardar carregamento
-            WebDriverWait(self.driver, 15).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, "tr[bgcolor]"))
+            # Aguardar carregamento da tabela
+            WebDriverWait(self.driver, 20).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, "table"))
             )
             
-            # Extrair dados das ofertas
+            # Aguardar um pouco mais para garantir carregamento completo
+            time.sleep(3)
+            
             ofertas = []
             
-            # Buscar elementos da tabela de produtos
             try:
-                # Localizar linhas da tabela
-                linhas_produtos = self.driver.find_elements(By.CSS_SELECTOR, "tr[bgcolor]")
+                # Localizar a tabela principal de produtos
+                tabela = self.driver.find_element(By.CSS_SELECTOR, "table")
+                linhas = tabela.find_elements(By.TAG_NAME, "tr")
                 
-                for i, linha in enumerate(linhas_produtos[:20]):  # Pegar top 20
+                logger.info(f"📊 Encontradas {len(linhas)} linhas na tabela")
+                
+                # Processar cada linha (pular cabeçalho)
+                for i, linha in enumerate(linhas[1:21]):  # Top 20 produtos
                     try:
-                        # Extrair dados de cada coluna
                         colunas = linha.find_elements(By.TAG_NAME, "td")
                         
-                        if len(colunas) >= 6:
-                            # Extrair informações principais
+                        if len(colunas) >= 7:  # Verificar se tem colunas suficientes
+                            # Extrair dados de cada coluna
                             rank = str(i + 1)
                             
-                            # Nome do produto (segunda coluna)
+                            # Coluna 1: Produto (nome e link)
                             produto_cell = colunas[1]
-                            links = produto_cell.find_elements(By.TAG_NAME, "a")
-                            nome_produto = links[0].text.strip() if links else "N/A"
-                            url_produto = links[0].get_attribute("href") if links else "N/A"
+                            produto_links = produto_cell.find_elements(By.TAG_NAME, "a")
+                            nome_produto = produto_links[0].text.strip() if produto_links else "N/A"
+                            url_produto = produto_links[0].get_attribute("href") if produto_links else "N/A"
                             
-                            # Dados de performance (últimas colunas)
+                            # Coluna 2: Rank
+                            rank_oficial = colunas[0].text.strip() if colunas[0].text.strip() else rank
+                            
+                            # Coluna 3: Change
+                            change = colunas[2].text.strip() if len(colunas) > 2 else "N/A"
+                            
+                            # Coluna 4: Mntm (Momentum)
+                            momentum = colunas[3].text.strip() if len(colunas) > 3 else "N/A"
+                            
+                            # Coluna 5: Initial $/sale
                             initial_sale = colunas[4].text.strip() if len(colunas) > 4 else "N/A"
+                            
+                            # Coluna 6: Gravity
                             gravity = colunas[5].text.strip() if len(colunas) > 5 else "N/A"
+                            
+                            # Coluna 7: Info (ícones de informação)
+                            info_cell = colunas[6] if len(colunas) > 6 else None
+                            
+                            # Extrair categoria do nome do produto (heurística)
+                            categoria = self._extrair_categoria_produto(nome_produto)
                             
                             # Criar registro da oferta
                             oferta = {
                                 "plataforma": "CBEngine",
                                 "titulo": nome_produto,
                                 "url": url_produto,
+                                "rank_oficial": rank_oficial,
+                                "rank_sequencial": rank,
                                 "gravidade": gravity,
-                                "preco": initial_sale,
-                                "categoria": "ClickBank Top Gravity",
+                                "preco_inicial": initial_sale,
+                                "momentum": momentum,
+                                "change": change,
+                                "categoria": categoria,
                                 "comissao_inicial": "50-75%",
-                                "rank": rank,
-                                "data_garimpo": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                                "fonte_dados": "CBEngine Top Gravity",
+                                "data_garimpo": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                "timestamp": datetime.now().isoformat()
                             }
                             
                             ofertas.append(oferta)
                             self.dados_ofertas.append(oferta)
-                            logger.info(f"✅ Oferta CBEngine: {nome_produto} (Gravity: {gravity})")
+                            
+                            logger.info(f"✅ #{rank} - {nome_produto} | Gravity: {gravity} | $: {initial_sale}")
                             
                     except Exception as e:
-                        logger.warning(f"Erro ao processar linha {i}: {e}")
+                        logger.warning(f"⚠️ Erro ao processar linha {i+1}: {e}")
                         continue
-                        
-                logger.info(f"CBEngine: {len(ofertas)} ofertas coletadas")
+                
+                # Tentar coletar dados adicionais de outras páginas
+                self._garimpar_cbengine_categorias(ofertas)
+                
+                logger.info(f"🎯 CBEngine: {len(ofertas)} ofertas coletadas com sucesso")
+                
+                # Salvar dados específicos do CBEngine
+                if ofertas:
+                    self._salvar_dados_cbengine(ofertas)
+                
                 return ofertas
-                        
+                
             except Exception as e:
-                logger.error(f"Erro ao localizar produtos: {e}")
+                logger.error(f"❌ Erro ao processar tabela CBEngine: {e}")
                 return []
                 
         except Exception as e:
             logger.error(f"❌ Erro durante garimpo CBEngine: {e}")
             return []
+    
+    def _extrair_categoria_produto(self, nome_produto):
+        """
+        Extrai categoria do produto baseado no nome (heurística).
+        """
+        nome_lower = nome_produto.lower()
+        
+        # Categorias de saúde
+        if any(palavra in nome_lower for palavra in ['health', 'weight', 'loss', 'diet', 'fitness', 'muscle', 'supplement', 'nutrition']):
+            return "Health & Fitness"
+        
+        # Categorias de negócios
+        elif any(palavra in nome_lower for palavra in ['business', 'money', 'income', 'profit', 'marketing', 'sales', 'entrepreneur']):
+            return "Business / Investing"
+        
+        # Categorias de relacionamento
+        elif any(palavra in nome_lower for palavra in ['dating', 'relationship', 'love', 'attraction', 'romance']):
+            return "Relationships"
+        
+        # Categorias de autoajuda
+        elif any(palavra in nome_lower for palavra in ['manifestation', 'mindset', 'success', 'motivation', 'self-help', 'personal']):
+            return "Self-Help"
+        
+        # Categorias de tecnologia
+        elif any(palavra in nome_lower for palavra in ['software', 'app', 'system', 'tool', 'technology', 'digital']):
+            return "Software & Technology"
+        
+        # Categorias de hobbies
+        elif any(palavra in nome_lower for palavra in ['woodworking', 'craft', 'hobby', 'diy', 'art', 'music']):
+            return "Hobbies & Crafts"
+        
+        else:
+            return "General"
+    
+    def _garimpar_cbengine_categorias(self, ofertas_existentes):
+        """
+        Coleta dados adicionais de categorias específicas do CBEngine.
+        """
+        try:
+            logger.info("📂 Coletando dados de categorias específicas...")
+            
+            # URLs de categorias populares
+            categorias_urls = [
+                "https://cbengine.com/clickbank-best-gains.html",  # Best Gains
+                "https://cbengine.com/clickbank-new-products.html"  # New Products
+            ]
+            
+            for url in categorias_urls:
+                try:
+                    self.driver.get(url)
+                    time.sleep(2)
+                    
+                    # Processar produtos desta categoria
+                    linhas = self.driver.find_elements(By.CSS_SELECTOR, "tr[bgcolor]")
+                    
+                    for linha in linhas[:5]:  # Top 5 de cada categoria
+                        try:
+                            colunas = linha.find_elements(By.TAG_NAME, "td")
+                            if len(colunas) >= 2:
+                                produto_cell = colunas[1]
+                                links = produto_cell.find_elements(By.TAG_NAME, "a")
+                                nome = links[0].text.strip() if links else "N/A"
+                                
+                                # Verificar se já não temos este produto
+                                if not any(oferta['titulo'] == nome for oferta in ofertas_existentes):
+                                    logger.info(f"📝 Produto adicional encontrado: {nome}")
+                                    
+                        except Exception as e:
+                            continue
+                            
+                except Exception as e:
+                    logger.warning(f"⚠️ Erro ao processar categoria {url}: {e}")
+                    continue
+                    
+        except Exception as e:
+            logger.warning(f"⚠️ Erro ao coletar categorias adicionais: {e}")
+    
+    def _salvar_dados_cbengine(self, ofertas):
+        """
+        Salva dados específicos do CBEngine em arquivo separado.
+        """
+        try:
+            if ofertas:
+                df = pd.DataFrame(ofertas)
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                arquivo = f"data/cbengine_top_gravity_{timestamp}.csv"
+                
+                # Criar diretório se não existir
+                os.makedirs("data", exist_ok=True)
+                
+                df.to_csv(arquivo, index=False, encoding='utf-8')
+                logger.info(f"💾 Dados CBEngine salvos em: {arquivo}")
+                
+                # Salvar também em formato JSON para análise
+                arquivo_json = f"data/cbengine_top_gravity_{timestamp}.json"
+                df.to_json(arquivo_json, orient='records', indent=2)
+                logger.info(f"💾 Dados CBEngine salvos em JSON: {arquivo_json}")
+                
+                return arquivo
+                
+        except Exception as e:
+            logger.error(f"❌ Erro ao salvar dados CBEngine: {e}")
+            return None
     
     def analisar_dados(self):
         """
