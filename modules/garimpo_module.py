@@ -225,6 +225,80 @@ class GarimpadorOfertas:
         except Exception as e:
             logger.error(f"Erro no garimpo do Hotmart: {e}")
     
+    def garimpar_cbengine(self):
+        """
+        Garimpa ofertas do CBEngine (dados públicos do ClickBank).
+        """
+        logger.info("Iniciando garimpo do CBEngine...")
+        
+        try:
+            # Acessar página de Top Gravity
+            self.driver.get("https://cbengine.com/clickbank-top-gravity.html")
+            
+            # Aguardar carregamento
+            WebDriverWait(self.driver, 15).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, "tr[bgcolor]"))
+            )
+            
+            # Extrair dados das ofertas
+            ofertas = []
+            
+            # Buscar elementos da tabela de produtos
+            try:
+                # Localizar linhas da tabela
+                linhas_produtos = self.driver.find_elements(By.CSS_SELECTOR, "tr[bgcolor]")
+                
+                for i, linha in enumerate(linhas_produtos[:20]):  # Pegar top 20
+                    try:
+                        # Extrair dados de cada coluna
+                        colunas = linha.find_elements(By.TAG_NAME, "td")
+                        
+                        if len(colunas) >= 6:
+                            # Extrair informações principais
+                            rank = str(i + 1)
+                            
+                            # Nome do produto (segunda coluna)
+                            produto_cell = colunas[1]
+                            links = produto_cell.find_elements(By.TAG_NAME, "a")
+                            nome_produto = links[0].text.strip() if links else "N/A"
+                            url_produto = links[0].get_attribute("href") if links else "N/A"
+                            
+                            # Dados de performance (últimas colunas)
+                            initial_sale = colunas[4].text.strip() if len(colunas) > 4 else "N/A"
+                            gravity = colunas[5].text.strip() if len(colunas) > 5 else "N/A"
+                            
+                            # Criar registro da oferta
+                            oferta = {
+                                "plataforma": "CBEngine",
+                                "titulo": nome_produto,
+                                "url": url_produto,
+                                "gravidade": gravity,
+                                "preco": initial_sale,
+                                "categoria": "ClickBank Top Gravity",
+                                "comissao_inicial": "50-75%",
+                                "rank": rank,
+                                "data_garimpo": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                            }
+                            
+                            ofertas.append(oferta)
+                            self.dados_ofertas.append(oferta)
+                            logger.info(f"✅ Oferta CBEngine: {nome_produto} (Gravity: {gravity})")
+                            
+                    except Exception as e:
+                        logger.warning(f"Erro ao processar linha {i}: {e}")
+                        continue
+                        
+                logger.info(f"CBEngine: {len(ofertas)} ofertas coletadas")
+                return ofertas
+                        
+            except Exception as e:
+                logger.error(f"Erro ao localizar produtos: {e}")
+                return []
+                
+        except Exception as e:
+            logger.error(f"❌ Erro durante garimpo CBEngine: {e}")
+            return []
+    
     def analisar_dados(self):
         """
         Analisa os dados coletados e gera insights.
@@ -291,10 +365,15 @@ class GarimpadorOfertas:
         try:
             self._configurar_driver()
             
-            # Garimpar cada plataforma
+            # Garimpar CBEngine primeiro (não requer login)
+            self.garimpar_cbengine()
+            time.sleep(3)  # Pausa entre plataformas
+            
+            # Garimpar ClickBank (requer login)
             self.garimpar_clickbank()
             time.sleep(3)  # Pausa entre plataformas
             
+            # Garimpar Hotmart (requer login)
             self.garimpar_hotmart()
             
             # Analisar e salvar dados
