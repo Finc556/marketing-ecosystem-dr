@@ -171,21 +171,66 @@ elif modulo_selecionado == "⛏️ Garimpo de Ofertas":
     st.title("⛏️ Garimpo de Ofertas em Alta")
     st.markdown("Identifique automaticamente as ofertas e produtos que estão performando melhor no mercado.")
     
+    # Configurações de credenciais
+    with st.expander("🔐 Configurações de Acesso às Plataformas"):
+        st.markdown("### ClickBank")
+        col1, col2 = st.columns(2)
+        with col1:
+            cb_user = st.text_input("Usuário ClickBank:", placeholder="seu_usuario")
+        with col2:
+            cb_pass = st.text_input("Senha ClickBank:", type="password", placeholder="sua_senha")
+        
+        st.markdown("### Hotmart")
+        col3, col4 = st.columns(2)
+        with col3:
+            hm_email = st.text_input("Email Hotmart:", placeholder="seu@email.com")
+        with col4:
+            hm_pass = st.text_input("Senha Hotmart:", type="password", placeholder="sua_senha")
+        
+        st.info("💡 **Dica:** Você pode salvar essas credenciais no arquivo `.env` para não precisar digitar sempre.")
+    
     # Botão de garimpo
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         if st.button("🚀 Iniciar Garimpo", type="primary", use_container_width=True):
-            with st.spinner('🔍 Garimpando ofertas... Este processo pode levar alguns minutos.'):
-                try:
-                    resultado = iniciar_garimpo()
-                    if resultado.get("sucesso"):
-                        st.success(f"✅ Garimpo concluído! {resultado.get('total_ofertas', 0)} ofertas encontradas.")
-                        if resultado.get("analise"):
-                            st.json(resultado["analise"])
-                    else:
-                        st.error(f"❌ Erro no garimpo: {resultado.get('erro', 'Erro desconhecido')}")
-                except Exception as e:
-                    st.error(f"❌ Erro durante o garimpo: {str(e)}")
+            # Verificar se pelo menos uma plataforma tem credenciais
+            tem_clickbank = cb_user and cb_pass
+            tem_hotmart = hm_email and hm_pass
+            
+            if not (tem_clickbank or tem_hotmart):
+                st.error("❌ Por favor, forneça credenciais para pelo menos uma plataforma (ClickBank ou Hotmart).")
+            else:
+                with st.spinner('🔍 Garimpando ofertas... Este processo pode levar alguns minutos.'):
+                    try:
+                        # Mostrar quais plataformas serão processadas
+                        plataformas = []
+                        if tem_clickbank:
+                            plataformas.append("ClickBank")
+                        if tem_hotmart:
+                            plataformas.append("Hotmart")
+                        
+                        st.info(f"🎯 Processando: {', '.join(plataformas)}")
+                        
+                        resultado = iniciar_garimpo(
+                            clickbank_user=cb_user if tem_clickbank else None,
+                            clickbank_pass=cb_pass if tem_clickbank else None,
+                            hotmart_email=hm_email if tem_hotmart else None,
+                            hotmart_pass=hm_pass if tem_hotmart else None
+                        )
+                        
+                        if resultado.get("sucesso"):
+                            st.success(f"✅ Garimpo concluído! {resultado.get('total_ofertas', 0)} ofertas encontradas.")
+                            
+                            # Mostrar plataformas processadas
+                            if resultado.get("plataformas_processadas"):
+                                st.info(f"📊 Plataformas processadas: {', '.join(resultado['plataformas_processadas'])}")
+                            
+                            if resultado.get("analise"):
+                                st.json(resultado["analise"])
+                        else:
+                            st.error(f"❌ Erro no garimpo: {resultado.get('erro', 'Erro desconhecido')}")
+                    except Exception as e:
+                        st.error(f"❌ Erro durante o garimpo: {str(e)}")
     
     st.markdown("---")
     

@@ -303,11 +303,27 @@ class GarimpadorOfertas:
         finally:
             self._fechar_driver()
 
-def iniciar_garimpo():
+def iniciar_garimpo(clickbank_user=None, clickbank_pass=None, hotmart_email=None, hotmart_pass=None):
     """
     Função principal para iniciar o processo de garimpo.
     Interface simplificada para uso externo.
+    
+    Args:
+        clickbank_user: Usuário do ClickBank
+        clickbank_pass: Senha do ClickBank
+        hotmart_email: Email do Hotmart
+        hotmart_pass: Senha do Hotmart
     """
+    # Configurar credenciais nas variáveis de ambiente temporariamente
+    if clickbank_user:
+        os.environ['CLICKBANK_USERNAME'] = clickbank_user
+    if clickbank_pass:
+        os.environ['CLICKBANK_PASSWORD'] = clickbank_pass
+    if hotmart_email:
+        os.environ['HOTMART_EMAIL'] = hotmart_email
+    if hotmart_pass:
+        os.environ['HOTMART_PASSWORD'] = hotmart_pass
+    
     garimpador = GarimpadorOfertas(headless=True)
     resultado = garimpador.iniciar_garimpo_completo()
     return resultado
