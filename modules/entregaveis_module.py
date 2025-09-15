@@ -56,7 +56,7 @@ class CriadorEntregaveis:
                 if not api_key:
                     raise ValueError("GOOGLE_API_KEY não encontrada nas variáveis de ambiente")
                 genai.configure(api_key=api_key)
-                self.llm = genai.GenerativeModel('gemini-pro')
+                self.llm = genai.GenerativeModel('gemini-1.5-flash')  # Modelo mais recente
                 logger.info("Gemini configurado com sucesso")
                 
         except Exception as e:

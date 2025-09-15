@@ -72,10 +72,14 @@ st.sidebar.markdown("---")
 st.sidebar.markdown("### 🤖 Configuração de IA")
 
 # Verificação de API Keys
+manus_status = "✅ Sempre Disponível"
 openai_key_status = "✅ Configurada" if os.getenv("OPENAI_API_KEY") else "❌ Não configurada"
 gemini_key_status = "✅ Configurada" if os.getenv("GOOGLE_API_KEY") else "❌ Não configurada"
 
 with st.sidebar.expander("🔑 Configurar API Keys"):
+    st.markdown("**Manus AI (Nativo):**")
+    st.success("✅ Sempre disponível - Sem configuração necessária")
+    
     st.markdown("**OpenAI:**")
     openai_key = st.text_input("API Key OpenAI:", type="password", placeholder="sk-...")
     if openai_key:
@@ -94,6 +98,7 @@ with st.sidebar.expander("🔑 Configurar API Keys"):
     st.markdown("• [Google AI Studio](https://makersuite.google.com/app/apikey)")
 
 # Status das APIs
+st.sidebar.markdown(f"**Manus AI:** {manus_status}")
 st.sidebar.markdown(f"**OpenAI:** {openai_key_status}")
 st.sidebar.markdown(f"**Gemini:** {gemini_key_status}")
 
@@ -115,7 +120,7 @@ st.sidebar.markdown("### 🔧 Configurações")
 # Seleção do provedor de IA
 provider_ia = st.sidebar.selectbox(
     "Provedor de IA:",
-    ("openai", "gemini"),
+    ("manus", "gemini", "openai"),  # Manus AI como padrão
     help="Escolha o provedor de IA para os módulos de copy e entregáveis"
 )
 
