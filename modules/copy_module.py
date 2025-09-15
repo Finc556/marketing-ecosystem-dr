@@ -118,57 +118,163 @@ class CerebroCopy:
     
     def _gerar_copy_otimizada_nativa(self, prompt: str) -> str:
         """
-        Gera copy otimizada usando conhecimento nativo.
+        Gera copy otimizada usando conhecimento dos 10 bestsellers de Direct Response.
         """
-        return """
-# 🎯 Copy Otimizada - Manus AI
-
-## 🔥 Hooks Poderosos:
-1. **"Descoberta Chocante Revela..."** - Desperta curiosidade imediata
-2. **"O Segredo Que [Nicho] Não Quer Que Você Saiba"** - Cria urgência
-3. **"Como [Resultado] Em Apenas [Tempo]"** - Promessa específica
-4. **"Atenção: Esta Página Sai do Ar em [Data]"** - Escassez temporal
-5. **"Finalmente! A Solução Que Você Procurava"** - Alívio e solução
-
-## ✍️ Corpo Otimizado:
-
-**Você já se sentiu frustrado por não conseguir [problema específico]?**
-
-Eu entendo perfeitamente essa sensação. Durante anos, milhares de pessoas enfrentaram exatamente o mesmo desafio que você está vivendo agora.
-
-**Mas hoje isso muda.**
-
-Descobri um método revolucionário que já transformou a vida de mais de [número] pessoas em todo o Brasil. E o melhor? Funciona mesmo para quem:
-
-✅ Nunca teve experiência anterior
-✅ Tem pouco tempo disponível  
-✅ Já tentou outras soluções sem sucesso
-✅ Está começando do zero
-
-**O Segredo Está Na Metodologia [Nome]:**
-
-🎯 **Passo 1:** [Ação específica] - Em apenas 15 minutos
-🎯 **Passo 2:** [Resultado intermediário] - Você já vê os primeiros sinais
-🎯 **Passo 3:** [Resultado final] - Transformação completa
-
-**Mas atenção:** Esta oferta é limitada e só estará disponível até [data específica].
-
-## 🚀 Novo CTA Irresistível:
-
-**"QUERO TRANSFORMAR MINHA VIDA AGORA!"**
-
-👆 Clique aqui e garante sua vaga antes que seja tarde demais!
-
-⚡ **BÔNUS EXCLUSIVOS** (Valor: R$ 497):
-- Bônus #1: [Nome do bônus] (R$ 197)
-- Bônus #2: [Nome do bônus] (R$ 147)  
-- Bônus #3: [Nome do bônus] (R$ 97)
-- Bônus #4: Suporte VIP 30 dias (R$ 97)
-
-**🛡️ GARANTIA BLINDADA:** 30 dias para testar. Se não funcionar, devolvemos 100% do seu dinheiro!
+        # Extrair copy original do prompt
+        copy_original = ""
+        if "copy original:" in prompt.lower():
+            copy_original = prompt.split("copy original:")[-1].strip()
+        elif "copy:" in prompt.lower():
+            copy_original = prompt.split("copy:")[-1].strip()
+        
+        return f"""
+# 🎯 COPY OTIMIZADA - MANUS AI
+*Aplicando os 10 Bestsellers de Direct Response*
 
 ---
-*Copy otimizada pela Manus AI - Aplicando princípios de Hormozi, Brunson e Kennedy*
+
+## 🔥 5 HOOKS MATADORES
+
+### Hook #1 - Alex Hormozi (Oferta Irresistível)
+**"ATENÇÃO: Esta é a única oferta que você verá este ano que vale 10x mais do que custa... mas só até [DATA ESPECÍFICA]"**
+
+*Baseado em: $100M Offers - Cria valor percebido massivo com escassez real*
+
+### Hook #2 - Russell Brunson (Expert Story)
+**"A descoberta acidental que transformou um [SITUAÇÃO INICIAL] em [RESULTADO ESPECÍFICO] em apenas [TEMPO]... (e por que isso funciona para qualquer pessoa)"**
+
+*Baseado em: Expert Secrets - Ponte da epifania que cria autoridade*
+
+### Hook #3 - Gary Halbert (Conexão Emocional)
+**"Se você está cansado de [DOR ESPECÍFICA] e quer finalmente [DESEJO PROFUNDO], esta pode ser a mensagem mais importante que você lerá este ano..."**
+
+*Baseado em: The Boron Letters - Identificação emocional profunda*
+
+### Hook #4 - Dan Kennedy (Curiosidade Magnética)
+**"O 'segredo sujo' que [AUTORIDADE/INDÚSTRIA] não quer que você descubra sobre [TÓPICO]... (revelado na página 2)"**
+
+*Baseado em: Ultimate Sales Letter - Headlines que param o scroll*
+
+### Hook #5 - Jeff Walker (Antecipação)
+**"Em 72 horas, vou revelar o método exato que [RESULTADO ESPECÍFICO]... mas primeiro, você precisa ver isso:"**
+
+*Baseado em: Launch - Criação de antecipação e urgência temporal*
+
+---
+
+## ✍️ CORPO SUPER PERSUASIVO
+
+### ABERTURA (Brunson + Halbert)
+Você já se perguntou por que algumas pessoas conseguem [RESULTADO DESEJADO] enquanto outras ficam presas no mesmo lugar, tentando as mesmas estratégias que nunca funcionam?
+
+**Eu descobri a resposta.**
+
+E não é o que você pensa.
+
+### AGITAÇÃO DA DOR (Hormozi + Kennedy)
+A verdade é que você provavelmente já tentou:
+❌ [SOLUÇÃO COMUM 1] - e só perdeu tempo
+❌ [SOLUÇÃO COMUM 2] - e gastou dinheiro à toa  
+❌ [SOLUÇÃO COMUM 3] - e ficou mais frustrado ainda
+
+**E sabe por que nada funcionou?**
+
+Porque você estava usando métodos criados para pessoas que já tinham [VANTAGEM/RECURSO], não para alguém na sua situação.
+
+### REVELAÇÃO DA SOLUÇÃO (Brunson + Benson)
+Mas tudo mudou quando descobri o **Método [NOME PROPRIETÁRIO]**.
+
+Esta não é mais uma "estratégia milagrosa". É um sistema científico, testado com mais de [NÚMERO] pessoas reais, que funciona mesmo quando:
+
+✅ Você nunca teve experiência anterior
+✅ Tem pouco tempo disponível (apenas 15-30 min/dia)
+✅ Não tem grandes investimentos para fazer
+✅ Já tentou outras coisas sem sucesso
+
+### PROVA SOCIAL ESTRATÉGICA (Kennedy + Hopkins)
+**Resultados Reais de Pessoas Reais:**
+
+*"Em 30 dias consegui [RESULTADO ESPECÍFICO]. Nunca pensei que fosse possível!" - [Nome], [Cidade]*
+
+*"Funcionou mesmo tendo [OBJEÇÃO COMUM]. Estou impressionado!" - [Nome], [Profissão]*
+
+*"Já recuperei o investimento em [TEMPO] e continua gerando [BENEFÍCIO]" - [Nome], [Idade]*
+
+### OFERTA IRRESISTÍVEL (Hormozi + Walker)
+**Aqui está exatamente o que você recebe hoje:**
+
+🎯 **COMPONENTE PRINCIPAL**: [Nome do Produto] (Valor: R$ [X])
+- [Benefício específico 1]
+- [Benefício específico 2]  
+- [Benefício específico 3]
+
+🎁 **BÔNUS EXCLUSIVO #1**: [Nome] (Valor: R$ [Y])
+*[Descrição do valor que agrega]*
+
+🎁 **BÔNUS EXCLUSIVO #2**: [Nome] (Valor: R$ [Z])
+*[Descrição do valor que agrega]*
+
+🎁 **BÔNUS EXCLUSIVO #3**: [Nome] (Valor: R$ [W])
+*[Descrição do valor que agrega]*
+
+**VALOR TOTAL: R$ [SOMA TOTAL]**
+
+### GARANTIA PODEROSA (Hormozi + Kennedy)
+**🛡️ GARANTIA BLINDADA DE 30 DIAS:**
+
+Teste por 30 dias completos. Se não conseguir [RESULTADO ESPECÍFICO] ou não ficar 100% satisfeito, devolvemos todo seu dinheiro + R$ 50 pelo seu tempo.
+
+*Sem perguntas. Sem complicações. Sem letras miúdas.*
+
+### ESCASSEZ REAL (Hormozi + Halbert)
+**⚠️ IMPORTANTE - LEIA ISTO:**
+
+Esta oferta especial expira em [DATA ESPECÍFICA] às 23:59h.
+
+Não é marketing. É real.
+
+Depois desta data, o preço volta para R$ [PREÇO NORMAL] e os bônus não estarão mais disponíveis.
+
+**Por quê?** Porque só posso dar suporte personalizado para [NÚMERO] pessoas por vez.
+
+---
+
+## 🚀 CTA MATADOR
+
+### BOTÃO PRINCIPAL:
+**"QUERO GARANTIR MINHA VAGA AGORA!"**
+
+### TEXTO DE APOIO:
+👆 **Clique aqui e transforme sua vida nos próximos 30 dias**
+
+⚡ **Últimas [NÚMERO] vagas disponíveis**
+🔒 **Pagamento 100% seguro**
+📱 **Acesso imediato após confirmação**
+
+### CTA SECUNDÁRIO (Recuperação):
+*"Ainda tem dúvidas? Clique aqui e veja mais depoimentos reais"*
+
+### URGÊNCIA FINAL:
+**⏰ Esta página sai do ar em:**
+[CONTADOR REGRESSIVO]
+
+**Não deixe para depois. Sua transformação começa hoje.**
+
+---
+
+## 📊 ELEMENTOS APLICADOS DOS MESTRES:
+
+✅ **Alex Hormozi**: Oferta irresistível + escassez real + garantia poderosa
+✅ **Russell Brunson**: Expert story + framework proprietário + funil de valor
+✅ **Dan Kennedy**: Headlines magnéticas + bullets curiosos + múltiplos CTAs
+✅ **Gary Halbert**: Conexão emocional + urgência psicológica + copy conversacional
+✅ **Jon Benson**: Fluidez de VSL + transições suaves + ritmo envolvente
+✅ **Jeff Walker**: Antecipação + sequência de lançamento + deadlines reais
+✅ **Claude Hopkins**: Abordagem científica + resultados mensuráveis + ofertas específicas
+
+---
+
+*Copy otimizada pela Manus AI - Integrando os 10 bestsellers de Direct Response*
         """
     
     def _gerar_resposta_generica_nativa(self, prompt: str) -> str:
