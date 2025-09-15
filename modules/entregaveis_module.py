@@ -42,7 +42,12 @@ class CriadorEntregaveis:
                 api_key = os.getenv("OPENAI_API_KEY")
                 if not api_key:
                     raise ValueError("OPENAI_API_KEY não encontrada nas variáveis de ambiente")
-                self.llm = OpenAI(api_key=api_key)
+                
+                # Usar API oficial do OpenAI
+                self.llm = OpenAI(
+                    api_key=api_key,
+                    base_url="https://api.openai.com/v1"  # API oficial
+                )
                 logger.info("OpenAI configurado com sucesso")
                 
             elif self.provider == "gemini":
@@ -52,10 +57,7 @@ class CriadorEntregaveis:
                     raise ValueError("GOOGLE_API_KEY não encontrada nas variáveis de ambiente")
                 genai.configure(api_key=api_key)
                 self.llm = genai.GenerativeModel('gemini-pro')
-                logger.info("Google Gemini configurado com sucesso")
-                
-            else:
-                raise ValueError(f"Provedor '{self.provider}' não suportado")
+                logger.info("Gemini configurado com sucesso")
                 
         except Exception as e:
             logger.error(f"Erro ao configurar LLM: {e}")
@@ -74,7 +76,7 @@ class CriadorEntregaveis:
         try:
             if self.provider == "openai":
                 response = self.llm.chat.completions.create(
-                    model="gpt-4.1-mini",  # Modelo suportado
+                    model="gpt-3.5-turbo",  # Modelo mais estável
                     messages=[{"role": "user", "content": prompt}],
                     temperature=self.temperature,
                     max_tokens=2000
